@@ -1,11 +1,7 @@
 #define OPTIONS_LENGTH 5
 
-const char MENU_OPTIONS[OPTIONS_LENGTH][50] = {
-    "Inserir",
-    "Remover",
-    "Listar",
-    "Cadastrar",
-    "Sair do programa"};
+const char MENU_OPTIONS[OPTIONS_LENGTH][50] = {"Inserir", "Remover", "Listar",
+                                               "Cadastrar", "Sair do programa"};
 
 void showMenu() {
   clearScreen();

@@ -1,8 +1,8 @@
-#include "functions.h"
+#include "functions.c"
 
 int main(int argc, char const *argv[]) {
-  struct Playlist playlist;
-  playlist.musics = malloc(sizeof(struct Music));
+  struct Playlist *playlist = malloc(sizeof(struct Playlist));
+  (*playlist).musics = malloc(sizeof(struct Music));
 
   while (true) {
     showMenu();
@@ -15,12 +15,13 @@ int main(int argc, char const *argv[]) {
 
     if (option == OPTIONS_LENGTH) break;
     (*FUNCTIONS[option])(playlist);
+    enterToContinue();
   };
 
   clearScreen();
   printf(">> Fim da Execucao do programa <<\n");
   printf("Equipe: Gustavo HTM e Jezreel KM");
 
-  free(&playlist);
+  free(playlist);
   return 0;
 }

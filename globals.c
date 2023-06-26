@@ -8,16 +8,18 @@ struct Date {
 };
 
 struct Music {
-  char * name;
+  char *name;
   int duration;
-  char * style;
+  char *style;
   struct Artist artist;
   struct Date registrationDate;
 };
 
 struct Playlist {
-  struct Music * musics;
+  struct Music *musics;
 };
+
+#define RECORDS_PATH "records.txt"
 
 void enterToContinue() {
   printf("\n\n>> Pressione enter para continuar...");
@@ -30,5 +32,3 @@ void message(char *message) {
 }
 
 void clearScreen() { system("cls"); }
-
-void invalidOption() { message("Opcao invalida!"); }
