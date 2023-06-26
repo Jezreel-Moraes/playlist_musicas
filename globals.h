@@ -1,6 +1,22 @@
-struct artist {
+struct Artist {
   char *name;
   char *nationality;
+};
+
+struct Date {
+  int day, month, year;
+};
+
+struct Music {
+  char * name;
+  int duration;
+  char * style;
+  struct Artist artist;
+  struct Date registrationDate;
+};
+
+struct Playlist {
+  struct Music * musics;
 };
 
 void enterToContinue() {
