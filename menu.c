@@ -1,6 +1,6 @@
 #define OPTIONS_LENGTH 5
 
-const char MENU_OPTIONS[OPTIONS_LENGTH][50] = {"Inserir", "Remover", "Listar",
+const char MENU_OPTIONS[OPTIONS_LENGTH][16] = {"Inserir", "Remover", "Listar",
                                                "Consultar", "Sair do programa"};
 
 void showMenu() {
