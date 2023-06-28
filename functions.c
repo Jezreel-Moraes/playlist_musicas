@@ -62,43 +62,94 @@ void insert(struct Music *music) {
   fclose(file);
 }
 
-int find(char *key) {
+void newRecord() {}
+
+void recordRemove() {}
+
+int stringToInteger(char *string) {
+  int value = 0;
+  for (int i = 0; string[i] != '\0'; i++) {
+    value = value * 10 + (string[i] - '0');
+  }
+
+  return value;
+}
+
+char *nextData(int *startIndex, int *endIndex, char *line, char *field) {
+  strncpy(field, line + *startIndex, *endIndex);
+  field[*endIndex] = '\0';
+  *startIndex += *endIndex + 1;
+  *endIndex = (int)(strchr(line + *startIndex, ';') - line) - *startIndex;
+}
+
+struct Music lineDataToMusic(char *line) {
+  struct Music music;
+
+  int startIndex = 0;
+  int endIndex = strchr(line, (int)';') - line;
+
+  nextData(&startIndex, &endIndex, line, music.name);
+
+  char duration[50];
+  nextData(&startIndex, &endIndex, line, duration);
+  music.duration = stringToInteger(duration);
+
+  nextData(&startIndex, &endIndex, line, music.style);
+  nextData(&startIndex, &endIndex, line, music.artist.name);
+  nextData(&startIndex, &endIndex, line, music.artist.nationality);
+
+  char day[50];
+  nextData(&startIndex, &endIndex, line, day);
+  music.registrationDate.day = stringToInteger(day);
+
+  char month[50];
+  nextData(&startIndex, &endIndex, line, month);
+  music.registrationDate.month = stringToInteger(month);
+
+  char year[50];
+  nextData(&startIndex, &endIndex, line, year);
+  music.registrationDate.year = stringToInteger(year);
+
+  return music;
+}
+
+void listRecords() {
   FILE *file = fopen(RECORDS_PATH, "rt");
   if (file == NULL) {
     message("Erro ao procurar registro!");
     return -1;
   }
 
-  int index = -1;
-  char line[100];
-  for (int i = 0; fgets(line, 100, file) != NULL; i++) {
-    int nameLength = strchr(line, (int)';') - line;
-    char name[120];
-    strncpy(name, line, nameLength);
-    name[nameLength] = '\0';
+  printf("%-30s%-30s%-30s%-30s\n", "Musica", "Artista", "Nacionalidade",
+         "Cadastramento");
 
-    if (*name == *key) {
-      index = i;
-      break;
-    }
+  char line[250];
+  for (int i = 0; fgets(line, 250, file) != NULL; i++) {
+    struct Music music = lineDataToMusic(line);
+
+    printf("%-30s%-30s%-30s%02d/%02d/%02d\n", music.name, music.artist.name,
+           music.artist.nationality, music.registrationDate.day,
+           music.registrationDate.month, music.registrationDate.year);
   }
+
   fclose(file);
-  return index;
 }
 
-void newRecord(struct Playlist *playlist) {}
-
-void recordRemove(struct Playlist *playlist) {}
-
-void listRecords() {}
-
-void showRecord(struct Playlist *playlist) {}
+void showRecord(struct Music music) {
+  printf("\nNome da musica: %s", music.name);
+  printf("\nDuracao: %d mins", music.duration);
+  printf("\nEstilo da musica: %s", music.style);
+  printf("\nNome do autor: %s", music.artist.name);
+  printf("\nNacionalidade do autor: %s", music.artist.nationality);
+  struct Date date = music.registrationDate;
+  printf("\nData de registro: %02d/%02d/%02d", date.day, date.month, date.year);
+}
 
 // Forma de selecionar a função baseado em posição
 const void (*FUNCTIONS[])() = {invalidOption, newRecord, recordRemove,
                                listRecords, showRecord};
 
-int main(int argc, char const *argv[]) {
+int insertTest(int argc, char const *argv[]) {
   struct Music *music = malloc(sizeof(struct Music));
 
   strcpy(music->name, "Roberto Martins");
@@ -113,5 +164,17 @@ int main(int argc, char const *argv[]) {
   insert(music);
   printf("Inserido");
   free(music);
+  return 0;
+}
+
+int getDataAndShowTest(int argc, char const *argv[]) {
+  showRecord(
+      lineDataToMusic("Roberto Martins;31;Phonk;Cordel;Russo;26;6;2023;"));
+
+  return 0;
+}
+
+int main(int argc, char const *argv[]) {
+  listRecords();
   return 0;
 }
