@@ -76,6 +76,7 @@ int stringToInteger(char *string) {
 }
 
 char *nextData(int *startIndex, int *endIndex, char *line, char *field) {
+  if (*endIndex == 0) *endIndex = strchr(line, ';') - line;
   strncpy(field, line + *startIndex, *endIndex);
   field[*endIndex] = '\0';
   *startIndex += *endIndex + 1;
@@ -85,8 +86,7 @@ char *nextData(int *startIndex, int *endIndex, char *line, char *field) {
 struct Music lineDataToMusic(char *line) {
   struct Music music;
 
-  int startIndex = 0;
-  int endIndex = strchr(line, (int)';') - line;
+  int startIndex = 0, endIndex = 0;
 
   nextData(&startIndex, &endIndex, line, music.name);
 
@@ -146,6 +146,35 @@ void showRecord(struct Music music) {
   printf("\nData de registro: %02d/%02d/%02d", date.day, date.month, date.year);
 }
 
+int find(char *key) {
+  FILE *file = fopen(RECORDS_PATH, "rt");
+  if (file == NULL) {
+    message("Erro ao procurar registro!");
+    return -1;
+  }
+
+  char line[250];
+  int index = 0;
+  for (int i = 0; fgets(line, 250, file) != NULL; i++) {
+    char musicName[50];
+    int start = 0, end = 0;
+    nextData(&start, &end, line, musicName);
+
+    if (strcmp(musicName, key) != 0) {
+      index++;
+      continue;
+    };
+
+    fclose(file);
+    free(file);
+    return index;
+  }
+
+  fclose(file);
+  free(file);
+  return -1;
+}
+
 // Forma de selecionar a função baseado em posição
 const void (*FUNCTIONS[])() = {invalidOption, newRecord, recordRemove,
                                listRecords, showRecord};
@@ -177,5 +206,14 @@ int getDataAndShowTest(int argc, char const *argv[]) {
 
 int testeListagem(int argc, char const *argv[]) {
   listRecords();
+  return 0;
+}
+
+int testeFind(int argc, char const *argv[]) {
+  printf("%d", find("Roberto Martins"));
+  printf("%d", find("Rita Cassia"));
+  printf("%d", find("Jezreel Moraes"));
+  printf("%d", find("Gustavo Martins"));
+
   return 0;
 }
