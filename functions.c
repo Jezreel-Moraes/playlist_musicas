@@ -120,6 +120,7 @@ void listRecords() {
     return -1;
   }
 
+  printf("Listagem de Musicas Cadastradas\n\n");
   printf("%-30s%-30s%-30s%-30s\n", "Musica", "Artista", "Nacionalidade",
          "Cadastramento");
 
@@ -174,7 +175,7 @@ int getDataAndShowTest(int argc, char const *argv[]) {
   return 0;
 }
 
-int main(int argc, char const *argv[]) {
+int testeListagem(int argc, char const *argv[]) {
   listRecords();
   return 0;
 }
