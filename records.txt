@@ -1,16 +1,2 @@
-Chocolatre;BananaBananaBananaBananaBananaBananaBananaBanana
-Banana;1
-Banana;2
-Banana;3
-Banana;4
-Banana;56
-Banana;6
-Banana;7
-Banana;8
-Maracuja;Chocolate 
-Banana;9
-Banana;0
-Banana;0
-Banana;6
-Banana;5
-Banana
+
+Roberto Martins;31;Phonk;Cordel;Russo;26;6;2023;

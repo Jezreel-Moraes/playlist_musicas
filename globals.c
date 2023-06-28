@@ -1,6 +1,6 @@
 struct Artist {
-  char *name;
-  char *nationality;
+  char name[50];
+  char nationality[50];
 };
 
 struct Date {
@@ -8,9 +8,9 @@ struct Date {
 };
 
 struct Music {
-  char *name;
+  char name[50];
   int duration;
-  char *style;
+  char style[50];
   struct Artist artist;
   struct Date registrationDate;
 };
