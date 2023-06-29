@@ -1,5 +1,6 @@
 #include <Windows.h>
 #include <conio.h>
+#include <ctype.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -9,11 +10,10 @@
 #include "globals.c"
 #include "menu.c"
 
-
 boolean isValidOption(int option) { return option > 0 && option < 10; }
 void invalidOption() { printf("Opcao invalida!"); }
 
-createFileIfNotExists() {
+void createFileIfNotExists() {
   FILE *file = fopen(RECORDS_PATH, "rt");
   if (file != NULL) {
     fclose(file);
@@ -90,7 +90,7 @@ void getStringInput(char *prompt, char *atr) {
 
 void getIntegerInput(char *prompt, int *atr) {
   char *aux;
-  bool validator;
+  boolean validator;
   do {
     printf("\n\n%s", prompt);
     fgets(aux, 49, stdin);
@@ -115,7 +115,7 @@ int isValidDate(struct Date date) {
   return 1;
 }
 
-bool isBlank(char *str) {
+boolean isBlank(char *str) {
   while (*str != '\0') {
     if (!isspace(*str)) {
       return false;
@@ -126,7 +126,7 @@ bool isBlank(char *str) {
 }
 
 void enterStringInput(char *prompt, char *atr) {
-  bool validator;
+  boolean validator;
   do {
     clearScreen();
     getStringInput(prompt, atr);
@@ -136,7 +136,7 @@ void enterStringInput(char *prompt, char *atr) {
   } while (validator);
 }
 
-bool isNumber(const char *str) {
+boolean isNumber(const char *str) {
   int i = 0;
   while (str[i] != '\0') {
     if (str[i] < '0' || str[i] > '9') return false;
@@ -147,7 +147,7 @@ bool isNumber(const char *str) {
 }
 
 void dateInput(struct Date date) {
-  bool validator;
+  boolean validator;
 
   do {
     printf("\n\nDigite a data no formato dd/mm/aaaa: ");
@@ -156,43 +156,6 @@ void dateInput(struct Date date) {
     validator = isValidDate(date);
     if (!validator) message("\nFormato de data invalida, tente novamente...");
   } while (!validator);
-}
-
-void newRecord() {
-  FILE *file = fopen(RECORDS_PATH, "at");
-  if (file == NULL) {
-    message("Erro ao inserir registro!");
-    return;
-  }
-
-  struct Music music;
-  bool musicDuplicated, validator;
-  int validDate;
-
-  do {
-    clearScreen();
-    getStringInput("Informe o nome da musica: ", music.name);
-    musicDuplicated = find(music.name) != -1;
-    validator = isBlank(music.name);
-
-    if (musicDuplicated) message("\nMusica ja existente, tente novamente...");
-    if (validator) message("\nO campo nao pode ser vazio, tente novamente...");
-  } while (musicDuplicated || validator);
-
-  getIntegerInput("Informe seu tempo de duracao em minutos: ", &music.duration);
-
-  enterStringInput("Informe o estilo musical da musica: ", music.style);
-
-  enterStringInput("Informe o nome do artista: ", music.artist.name);
-
-  enterStringInput("Informe a nacionalidade do artista: ",
-                   music.artist.nationality);
-
-  dateInput(music.registrationDate);
-
-  insert(&music);
-  fclose(file);
-  free(file);
 }
 
 int stringToInteger(char *string) {
@@ -300,6 +263,7 @@ char *getRecordLineData(int index) {
   char *line = malloc(sizeof(char) * 250);
   for (int i = 0; fgets(line, 250, file) != NULL; i++) {
     if (i != index) continue;
+    if (haveNoRecords()) return;
 
     fclose(file);
     free(file);
@@ -391,7 +355,7 @@ void newRecord() {
   }
 
   struct Music music;
-  bool musicDuplicated;
+  boolean musicDuplicated;
   int validDate;
 
   do {
