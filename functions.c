@@ -62,7 +62,48 @@ void insert(struct Music *music) {
   fclose(file);
 }
 
-void newRecord() {}
+void getStringInput(char *prompt, char *atr) {
+  printf("\n\n%s", prompt);
+  fgets(atr, 49, stdin);
+  atr[strcspn(atr, "\n")] = '\0';
+}
+
+void getIntegerInput(char *prompt, int *atr) {
+  printf("\n\n%s", prompt);
+  scanf("%d", atr);
+}
+
+void newRecord() {
+  FILE *file = fopen(RECORDS_PATH, "at");
+  if (file == NULL) {
+    message("Erro ao inserir registro!");
+    return;
+  }
+
+  struct Music music;
+
+  do {
+    clearScreen();
+    printf("Informe o nome da musica: ");
+    fgets(music.name, 49, stdin);
+    music.name[strcspn(music.name, "\n")] = '\0';
+  } while (find(music.name) != -1);
+
+  printf("\n\nInforme seu tempo de duracao em minutos: ");
+  scanf("%d", music.duration);
+
+  printf("\n\nInforme o estilo musical da musica: ");
+  fgets(music.style, 49, stdin);
+  music.style[strcspn(music.style, "\n")] = '\0';
+
+  printf("\n\nInforme o nome do artista: ");
+  fgets(music.artist.name, 49, stdin);
+  music.artist.name[strcspn(music.artist.name, "\n")] = '\0';
+
+  printf("\n\nInforme a nacionalidade do artista: ");
+  fgets(music.artist.name, 49, stdin);
+  music.artist.name[strcspn(music.artist.name, "\n")] = '\0';
+}
 
 int stringToInteger(char *string) {
   int value = 0;
@@ -273,12 +314,13 @@ int testeFind(int argc, char const *argv[]) {
   return 0;
 }
 
-int testeListRemoveThenListAgain(int argc, char const *argv[]) {
-  listRecords();
-  printf("\n\n\n");
-  recordRemove(find("Gustavo Martins"));
-  listRecords();
-
+int testeinput(int argc, char const *argv[]) {
+  char macaconame[50];
+  int id;
+  getStringInput("Oii jez, to com sdds: ", &macaconame);
+  printf("o nome é: %s", macaconame);
+  getIntegerInput("Oii jez, to com sdds: ", &id);
+  printf("a idade é: %d", id);
   return 0;
 }
 
