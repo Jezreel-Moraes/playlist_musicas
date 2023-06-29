@@ -175,7 +175,7 @@ void listRecords() {
   fclose(file);
 }
 
-void showRecord(struct Music music) {
+void showRecordData(struct Music music) {
   printf("\nNome da musica: %s", music.name);
   printf("\nDuracao: %d mins", music.duration);
   printf("\nEstilo da musica: %s", music.style);
@@ -185,12 +185,21 @@ void showRecord(struct Music music) {
   printf("\nData de registro: %02d/%02d/%02d", date.day, date.month, date.year);
 }
 
+char *toLower(char *string) {
+  char *newString = malloc(sizeof(char) * strlen(string));
+  strcpy(newString, string);
+  for (char *p = newString; *p; p++) *p = tolower(*p);
+  return newString;
+}
+
 int find(char *key) {
   FILE *file = fopen(RECORDS_PATH, "rt");
   if (file == NULL) {
     message("Erro ao procurar registro!");
     return -1;
   }
+
+  char *formattedKey = toLower(key);
 
   char line[250];
   int index = 0;
@@ -199,7 +208,7 @@ int find(char *key) {
     int start = 0, end = 0;
     nextData(&start, &end, line, musicName);
 
-    if (strcmp(musicName, key) != 0) {
+    if (strcmp(toLower(musicName), formattedKey) != 0) {
       index++;
       continue;
     };
@@ -212,6 +221,38 @@ int find(char *key) {
   fclose(file);
   free(file);
   return -1;
+}
+
+char *getRecordLineData(int index) {
+  FILE *file = fopen(RECORDS_PATH, "rt");
+  if (file == NULL) {
+    message("Erro ao procurar registro!");
+    return;
+  }
+
+  char *line = malloc(sizeof(char) * 250);
+  for (int i = 0; fgets(line, 250, file) != NULL; i++) {
+    if (i != index) continue;
+
+    fclose(file);
+    free(file);
+    return line;
+  }
+}
+
+int findRecord() {
+  char musicName[50];
+  getStringInput(" >> Insira o nome da musica procurada: ", musicName);
+
+  int recordIndex = find(musicName);
+  if (recordIndex == -1) printf("[Musica nao encontrada]");
+  return recordIndex;
+}
+
+void showRecord() {
+  int recordIndex = findRecord();
+  if (recordIndex == -1) return;
+  showRecordData(lineDataToMusic(getRecordLineData(recordIndex)));
 }
 
 void recordRemove(int index) {
@@ -260,7 +301,7 @@ int insertTest(int argc, char const *argv[]) {
 }
 
 int getDataAndShowTest(int argc, char const *argv[]) {
-  showRecord(
+  showRecordData(
       lineDataToMusic("Roberto Martins;31;Phonk;Cordel;Russo;26;6;2023;"));
 
   return 0;
@@ -283,9 +324,14 @@ int testeFind(int argc, char const *argv[]) {
 int testeinput(int argc, char const *argv[]) {
   char macaconame[50];
   int id;
-  getStringInput("Oii jez, to com sdds: ", &macaconame);
+  getStringInput("Oii jez, to com sdds: ", macaconame);
   printf("o nome é: %s", macaconame);
   getIntegerInput("Oii jez, to com sdds: ", &id);
   printf("a idade é: %d", id);
+  return 0;
+}
+
+int main(int argc, char const *argv[]) {
+  showRecord();
   return 0;
 }
