@@ -1,6 +1,7 @@
 #include "functions.c"
 
 int main(int argc, char const *argv[]) {
+  createFileIfNotExists();
   while (true) {
     showMenu();
     int option = getOption();
