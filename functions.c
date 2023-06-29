@@ -384,6 +384,8 @@ void newRecord() {
 void recordRemove() {
   if (haveNoRecords()) return;
 
+  listAllRecords();
+
   int recordIndex = findRecord();
   if (recordIndex == -1) return;
   recordLineDateRemove(recordIndex);
@@ -401,6 +403,8 @@ void listRecords() {
 
 void showRecord() {
   if (haveNoRecords()) return;
+
+  listAllRecords();
 
   int recordIndex = findRecord();
   if (recordIndex == -1) return;
