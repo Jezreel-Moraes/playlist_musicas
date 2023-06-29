@@ -71,6 +71,19 @@ void getStringInput(char *prompt, char *atr) {
 void getIntegerInput(char *prompt, int *atr) {
   printf("\n\n%s", prompt);
   scanf("%d", atr);
+  fflush(stdin);
+}
+
+int isValidDate(int days, int month, int year) {
+  int daysForMonth[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+  if (year > 2023) return 0;
+
+  if (month < 1 || month > 12) return 0;
+
+  if (days < 1 || days > daysForMonth[month - 1]) return 0;
+
+  return 1;
 }
 
 void newRecord() {
@@ -81,28 +94,37 @@ void newRecord() {
   }
 
   struct Music music;
+  bool musicDuplicated;
+  int validDate;
 
   do {
     clearScreen();
-    printf("Informe o nome da musica: ");
-    fgets(music.name, 49, stdin);
-    music.name[strcspn(music.name, "\n")] = '\0';
-  } while (find(music.name) != -1);
+    getStringInput("Informe o nome da musica: ", music.name);
+    musicDuplicated = find(music.name) != -1;
 
-  printf("\n\nInforme seu tempo de duracao em minutos: ");
-  scanf("%d", music.duration);
+    if (musicDuplicated) message("\nMusica ja existente, tente novamente...");
+  } while (musicDuplicated);
 
-  printf("\n\nInforme o estilo musical da musica: ");
-  fgets(music.style, 49, stdin);
-  music.style[strcspn(music.style, "\n")] = '\0';
+  getIntegerInput("Informe seu tempo de duracao em minutos: ", &music.duration);
 
-  printf("\n\nInforme o nome do artista: ");
-  fgets(music.artist.name, 49, stdin);
-  music.artist.name[strcspn(music.artist.name, "\n")] = '\0';
+  getStringInput("Informe o estilo musical da musica: ", music.style);
 
-  printf("\n\nInforme a nacionalidade do artista: ");
-  fgets(music.artist.name, 49, stdin);
-  music.artist.name[strcspn(music.artist.name, "\n")] = '\0';
+  getStringInput("Informe o nome do artista: ", music.artist.name);
+
+  getStringInput("Informe a nacionalidade do artista: ",
+                 music.artist.nationality);
+
+  do {
+    printf("\n\nDigite a data no formato dia/mes/ano: ");
+    scanf("%d/%d/%d", &music.registrationDate.day,
+          &music.registrationDate.month, &music.registrationDate.year);
+
+    if (!validDate) message("\nData invalida, tente novamente...");
+  } while (!validDate);
+
+  insert(&music);
+  fclose(file);
+  free(file);
 }
 
 int stringToInteger(char *string) {
