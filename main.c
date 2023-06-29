@@ -11,6 +11,7 @@ int main(int argc, char const *argv[]) {
       continue;
     }
 
+    fflush(stdin);
     clearScreen();
     if (option == OPTIONS_LENGTH) break;
     (*FUNCTIONS[option])();

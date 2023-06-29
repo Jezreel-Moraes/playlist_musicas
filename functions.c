@@ -293,6 +293,16 @@ void recordLineDateRemove(int index) {
   rename(TEMP_PATH, RECORDS_PATH);
 }
 
+boolean haveNoRecords() {
+  int recordCounter = countRecords();
+  if (recordCounter == 0) {
+    printf("Nenhum registro encontrado!");
+    return true;
+  }
+
+  return false;
+}
+
 void newRecord() {
   FILE *file = fopen(RECORDS_PATH, "at");
   if (file == NULL) {
@@ -335,6 +345,8 @@ void newRecord() {
 }
 
 void recordRemove() {
+  if (haveNoRecords()) return;
+
   int recordIndex = findRecord();
   if (recordIndex == -1) return;
   recordLineDateRemove(recordIndex);
@@ -342,16 +354,13 @@ void recordRemove() {
 }
 
 void listRecords() {
-  int recordCounter = countRecords();
-  if (recordCounter == 0) {
-    printf("Nenhum registro encontrado!");
-    return;
-  }
-
+  if (haveNoRecords()) return;
   listAllRecords();
 }
 
 void showRecord() {
+  if (haveNoRecords()) return;
+
   int recordIndex = findRecord();
   if (recordIndex == -1) return;
   showRecordData(lineDataToMusic(getRecordLineData(recordIndex)));
