@@ -192,7 +192,7 @@ char *getRecordLineData(int index) {
 
 int findRecord() {
   char musicName[50];
-  printf(" >> Insira o nome da musica procurada:");
+  printf(" >> Insira o nome da musica procurada: ");
   fgets(musicName, 50, stdin);
   musicName[strcspn(musicName, "\n")] = '\0';
 
