@@ -134,7 +134,7 @@ void listRecords() {
   fclose(file);
 }
 
-void showRecord(struct Music music) {
+void showRecordData(struct Music music) {
   printf("\nNome da musica: %s", music.name);
   printf("\nDuracao: %d mins", music.duration);
   printf("\nEstilo da musica: %s", music.style);
@@ -171,6 +171,40 @@ int find(char *key) {
   fclose(file);
   free(file);
   return -1;
+}
+
+char *getRecordLineData(int index) {
+  FILE *file = fopen(RECORDS_PATH, "rt");
+  if (file == NULL) {
+    message("Erro ao procurar registro!");
+    return;
+  }
+
+  char *line = malloc(sizeof(char) * 250);
+  for (int i = 0; fgets(line, 250, file) != NULL; i++) {
+    if (i != index) continue;
+
+    fclose(file);
+    free(file);
+    return line;
+  }
+}
+
+int findRecord() {
+  char musicName[50];
+  printf(" >> Insira o nome da musica procurada:");
+  fgets(musicName, 50, stdin);
+  musicName[strcspn(musicName, "\n")] = '\0';
+
+  int recordIndex = find(musicName);
+  if (recordIndex == -1) printf("[Musica nao encontrada]");
+  return recordIndex;
+}
+
+void showRecord() {
+  int recordIndex = findRecord();
+  if (recordIndex == -1) return;
+  showRecordData(lineDataToMusic(getRecordLineData(recordIndex)));
 }
 
 void recordRemove(int index) {
@@ -219,7 +253,7 @@ int insertTest(int argc, char const *argv[]) {
 }
 
 int getDataAndShowTest(int argc, char const *argv[]) {
-  showRecord(
+  showRecordData(
       lineDataToMusic("Roberto Martins;31;Phonk;Cordel;Russo;26;6;2023;"));
 
   return 0;
@@ -245,5 +279,10 @@ int testeListRemoveThenListAgain(int argc, char const *argv[]) {
   recordRemove(find("Gustavo Martins"));
   listRecords();
 
+  return 0;
+}
+
+int main(int argc, char const *argv[]) {
+  showRecord();
   return 0;
 }
