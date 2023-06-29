@@ -9,8 +9,28 @@
 #include "globals.c"
 #include "menu.c"
 
-bool isValidOption(int option) { return option > 0 && option < 10; }
-void invalidOption() { message("Opcao invalida!"); }
+
+boolean isValidOption(int option) { return option > 0 && option < 10; }
+void invalidOption() { printf("Opcao invalida!"); }
+
+createFileIfNotExists() {
+  FILE *file = fopen(RECORDS_PATH, "rt");
+  if (file != NULL) {
+    fclose(file);
+    free(file);
+    return;
+  };
+
+  FILE *newFile = fopen(RECORDS_PATH, "wt");
+  if (newFile != NULL) {
+    fclose(newFile);
+    free(newFile);
+    return;
+  };
+
+  message("[Erro] Não foi possível criar o arquivo de registros");
+  exit(-1);
+}
 
 void populateRecordString(char *record, char *field, int *currentIndex) {
   for (int i = 0; field[i] != '\0'; i++) {
@@ -222,29 +242,6 @@ struct Music lineDataToMusic(char *line) {
   return music;
 }
 
-void listRecords() {
-  FILE *file = fopen(RECORDS_PATH, "rt");
-  if (file == NULL) {
-    message("Erro ao procurar registro!");
-    return;
-  }
-
-  printf("Listagem de Musicas Cadastradas\n\n");
-  printf("%-30s%-30s%-30s%-30s\n", "Musica", "Artista", "Nacionalidade",
-         "Cadastramento");
-
-  char line[250];
-  for (int i = 0; fgets(line, 250, file) != NULL; i++) {
-    struct Music music = lineDataToMusic(line);
-
-    printf("%-30s%-30s%-30s%02d/%02d/%02d\n", music.name, music.artist.name,
-           music.artist.nationality, music.registrationDate.day,
-           music.registrationDate.month, music.registrationDate.year);
-  }
-
-  fclose(file);
-}
-
 void showRecordData(struct Music music) {
   printf("\nNome da musica: %s", music.name);
   printf("\nDuracao: %d mins", music.duration);
@@ -265,7 +262,7 @@ char *toLower(char *string) {
 int find(char *key) {
   FILE *file = fopen(RECORDS_PATH, "rt");
   if (file == NULL) {
-    message("Erro ao procurar registro!");
+    printf("Erro ao procurar registro!");
     return -1;
   }
 
@@ -296,7 +293,7 @@ int find(char *key) {
 char *getRecordLineData(int index) {
   FILE *file = fopen(RECORDS_PATH, "rt");
   if (file == NULL) {
-    message("Erro ao procurar registro!");
+    printf("Erro ao procurar registro!");
     return;
   }
 
@@ -308,6 +305,10 @@ char *getRecordLineData(int index) {
     free(file);
     return line;
   }
+
+  fclose(file);
+  free(file);
+  return line;
 }
 
 int findRecord() {
@@ -319,17 +320,51 @@ int findRecord() {
   return recordIndex;
 }
 
-void showRecord() {
-  int recordIndex = findRecord();
-  if (recordIndex == -1) return;
-  showRecordData(lineDataToMusic(getRecordLineData(recordIndex)));
+void listAllRecords() {
+  FILE *file = fopen(RECORDS_PATH, "rt");
+  if (file == NULL) {
+    printf("Erro ao procurar registros!");
+    return;
+  }
+
+  printf("Listagem de Musicas Cadastradas\n\n");
+  printf("%-30s%-30s%-30s%-30s\n", "Musica", "Artista", "Nacionalidade",
+         "Cadastramento");
+
+  char line[250];
+  for (int i = 0; fgets(line, 250, file) != NULL; i++) {
+    struct Music music = lineDataToMusic(line);
+
+    printf("%-30s%-30s%-30s%02d/%02d/%02d\n", music.name, music.artist.name,
+           music.artist.nationality, music.registrationDate.day,
+           music.registrationDate.month, music.registrationDate.year);
+  }
+
+  fclose(file);
+}
+
+int countRecords() {
+  FILE *file = fopen(RECORDS_PATH, "rt");
+  if (file == NULL) {
+    printf("Erro ao procurar registros!");
+    return;
+  }
+
+  char line[250];
+  int counter = 0;
+  while (fgets(line, 250, file) != NULL) {
+    counter++;
+  }
+
+  fclose(file);
+  return counter;
 }
 
 void recordLineDateRemove(int index) {
   FILE *file = fopen(RECORDS_PATH, "rt");
   FILE *temp = fopen(TEMP_PATH, "w");
   if (file == NULL || temp == NULL) {
-    message("Erro ao procurar registro!");
+    printf("Erro ao procurar registro!");
     return;
   }
 
@@ -348,11 +383,68 @@ void recordLineDateRemove(int index) {
   rename(TEMP_PATH, RECORDS_PATH);
 }
 
+void newRecord() {
+  FILE *file = fopen(RECORDS_PATH, "at");
+  if (file == NULL) {
+    message("Erro ao inserir registro!");
+    return;
+  }
+
+  struct Music music;
+  bool musicDuplicated;
+  int validDate;
+
+  do {
+    clearScreen();
+    getStringInput("Informe o nome da musica: ", music.name);
+    musicDuplicated = find(music.name) != -1;
+
+    if (musicDuplicated) message("\nMusica ja existente, tente novamente...");
+  } while (musicDuplicated);
+
+  getIntegerInput("Informe seu tempo de duracao em minutos: ", &music.duration);
+
+  getStringInput("Informe o estilo musical da musica: ", music.style);
+
+  getStringInput("Informe o nome do artista: ", music.artist.name);
+
+  getStringInput("Informe a nacionalidade do artista: ",
+                 music.artist.nationality);
+
+  do {
+    printf("\n\nDigite a data no formato dia/mes/ano: ");
+    scanf("%d/%d/%d", &music.registrationDate.day,
+          &music.registrationDate.month, &music.registrationDate.year);
+
+    if (!validDate) message("\nData invalida, tente novamente...");
+  } while (!validDate);
+
+  insert(&music);
+  fclose(file);
+  free(file);
+}
+
 void recordRemove() {
   int recordIndex = findRecord();
   if (recordIndex == -1) return;
   recordLineDateRemove(recordIndex);
   printf(" >> Musica removida com sucesso!");
+}
+
+void listRecords() {
+  int recordCounter = countRecords();
+  if (recordCounter == 0) {
+    printf("Nenhum registro encontrado!");
+    return;
+  }
+
+  listAllRecords();
+}
+
+void showRecord() {
+  int recordIndex = findRecord();
+  if (recordIndex == -1) return;
+  showRecordData(lineDataToMusic(getRecordLineData(recordIndex)));
 }
 
 // Forma de selecionar a função baseado em posição
