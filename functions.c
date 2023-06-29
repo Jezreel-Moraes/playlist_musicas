@@ -92,6 +92,7 @@ void getIntegerInput(char *prompt, int *field) {
   char *stringInput = malloc(sizeof(char) * 50);
   boolean valid;
   do {
+    clearScreen();
     printf("\n%s", prompt);
     fgets(stringInput, 50, stdin);
     stringInput[strcspn(stringInput, "\n")] = '\0';
