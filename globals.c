@@ -25,6 +25,7 @@ struct Playlist {
 void enterToContinue() {
   printf("\n\n>> Pressione enter para continuar...");
   getch();
+  printf("\n");
 }
 
 void message(char *message) {

@@ -6,12 +6,113 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "globals.c"
 #include "menu.c"
 
+// Utils
+
+int stringToInteger(char *string) {
+  int value = 0;
+  for (int i = 0; string[i] != '\0'; i++) {
+    value = value * 10 + (string[i] - '0');
+  }
+
+  return value;
+}
+
+char *toLower(char *string) {
+  char *newString = malloc(sizeof(char) * strlen(string));
+  strcpy(newString, string);
+  for (char *p = newString; *p; p++) *p = tolower(*p);
+  return newString;
+}
+
+int countRecords() {
+  FILE *file = fopen(RECORDS_PATH, "rt");
+  if (file == NULL) {
+    printf("Erro ao procurar registros!");
+    return 0;
+  }
+
+  char line[250];
+  int counter = 0;
+  while (fgets(line, 250, file) != NULL) {
+    counter++;
+  }
+
+  fclose(file);
+  return counter;
+}
+
+// Validações
+
 boolean isValidOption(int option) { return option > 0 && option < 10; }
 void invalidOption() { printf("Opcao invalida!"); }
+
+boolean isNumber(const char *str) {
+  for (int i = 0; str[i] != '\0'; i++) {
+    if (str[i] < '0' || str[i] > '9') continue;
+    return true;
+  }
+
+  return false;
+}
+
+boolean haveNoRecords() {
+  int recordCounter = countRecords();
+  if (recordCounter == 0) {
+    printf("Nenhum registro encontrado!");
+    return true;
+  }
+
+  return false;
+}
+
+boolean isBlank(char *string) {
+  while (*string != '\0') {
+    if (!isspace(*string)) {
+      return false;
+    }
+    string++;
+  }
+  return true;
+}
+
+// Procedimentos e funções
+
+void getStringInput(char *prompt, char *field) {
+  printf("\n%s", prompt);
+  fgets(field, 50, stdin);
+  field[strcspn(field, "\n")] = '\0';
+}
+
+void getIntegerInput(char *prompt, int *field) {
+  char *stringInput = malloc(sizeof(char) * 50);
+  boolean valid;
+  do {
+    printf("\n%s", prompt);
+    fgets(stringInput, 50, stdin);
+    stringInput[strcspn(stringInput, "\n")] = '\0';
+    valid = isNumber(stringInput);
+
+    if (!valid) message("[ERRO] - Valor invalido");
+  } while (!valid);
+
+  *field = stringToInteger(stringInput);
+}
+
+void enterStringInput(char *prompt, char *field) {
+  boolean valid;
+  do {
+    clearScreen();
+    getStringInput(prompt, field);
+    valid = isBlank(field);
+
+    if (valid) message("[ERRO] preencha o campo");
+  } while (valid);
+}
 
 void createFileIfNotExists() {
   FILE *file = fopen(RECORDS_PATH, "rt");
@@ -67,106 +168,6 @@ char *musicToString(struct Music *music) {
   return record;
 }
 
-void insert(struct Music *music) {
-  FILE *file = fopen(RECORDS_PATH, "at");
-  if (file == NULL) {
-    message("\nErro ao inserir registro!");
-    return;
-  }
-
-  char *record = musicToString(music);
-
-  printf("\nrecord: %s\n", record);
-
-  fputs(record, file);
-  fclose(file);
-}
-
-void getStringInput(char *prompt, char *atr) {
-  printf("\n\n%s", prompt);
-  fgets(atr, 49, stdin);
-  atr[strcspn(atr, "\n")] = '\0';
-}
-
-void getIntegerInput(char *prompt, int *atr) {
-  char *aux;
-  boolean validator;
-  do {
-    printf("\n\n%s", prompt);
-    fgets(aux, 49, stdin);
-    aux[strcspn(aux, "\n")] = '\0';
-    validator = isNumber(aux);
-
-    if (!validator) message("\nFormato invalido, tente novamente...");
-  } while (!validator);
-
-  atr = stringToInteger(aux);
-}
-
-int isValidDate(struct Date date) {
-  int daysForMonth[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-
-  if (date.year > 2023) return 0;
-
-  if (date.month < 1 || date.month > 12) return 0;
-
-  if (date.day < 1 || date.day > daysForMonth[date.month - 1]) return 0;
-
-  return 1;
-}
-
-boolean isBlank(char *str) {
-  while (*str != '\0') {
-    if (!isspace(*str)) {
-      return false;
-    }
-    str++;
-  }
-  return true;
-}
-
-void enterStringInput(char *prompt, char *atr) {
-  boolean validator;
-  do {
-    clearScreen();
-    getStringInput(prompt, atr);
-    validator = isBlank(atr);
-
-    if (validator) message("\nO campo nao pode ser vazio, tente novamente...");
-  } while (validator);
-}
-
-boolean isNumber(const char *str) {
-  int i = 0;
-  while (str[i] != '\0') {
-    if (str[i] < '0' || str[i] > '9') return false;
-    i++;
-  }
-
-  return true;
-}
-
-void dateInput(struct Date date) {
-  boolean validator;
-
-  do {
-    printf("\n\nDigite a data no formato dd/mm/aaaa: ");
-    scanf("%d/%d/%d", &date.day, &date.month, &date.year);
-
-    validator = isValidDate(date);
-    if (!validator) message("\nFormato de data invalida, tente novamente...");
-  } while (!validator);
-}
-
-int stringToInteger(char *string) {
-  int value = 0;
-  for (int i = 0; string[i] != '\0'; i++) {
-    value = value * 10 + (string[i] - '0');
-  }
-
-  return value;
-}
-
 char *nextData(int *startIndex, int *endIndex, char *line, char *field) {
   if (*endIndex == 0) *endIndex = strchr(line, ';') - line;
   strncpy(field, line + *startIndex, *endIndex);
@@ -205,21 +206,39 @@ struct Music lineDataToMusic(char *line) {
   return music;
 }
 
-void showRecordData(struct Music music) {
-  printf("\nNome da musica: %s", music.name);
-  printf("\nDuracao: %d mins", music.duration);
-  printf("\nEstilo da musica: %s", music.style);
-  printf("\nNome do autor: %s", music.artist.name);
-  printf("\nNacionalidade do autor: %s", music.artist.nationality);
-  struct Date date = music.registrationDate;
-  printf("\nData de registro: %02d/%02d/%02d", date.day, date.month, date.year);
+void insert(struct Music *music) {
+  FILE *file = fopen(RECORDS_PATH, "at");
+  if (file == NULL) {
+    printf("\nErro ao inserir registro!");
+    return;
+  }
+
+  char *record = musicToString(music);
+
+  fputs(record, file);
+  fclose(file);
 }
 
-char *toLower(char *string) {
-  char *newString = malloc(sizeof(char) * strlen(string));
-  strcpy(newString, string);
-  for (char *p = newString; *p; p++) *p = tolower(*p);
-  return newString;
+char *getRecordLineData(int index) {
+  FILE *file = fopen(RECORDS_PATH, "rt");
+  if (file == NULL) {
+    printf("Erro ao procurar registro!");
+    return "";
+  }
+
+  char *line = malloc(sizeof(char) * 250);
+  for (int i = 0; fgets(line, 250, file) != NULL; i++) {
+    if (i != index) continue;
+    if (haveNoRecords()) return "";
+
+    fclose(file);
+    free(file);
+    return line;
+  }
+
+  fclose(file);
+  free(file);
+  return line;
 }
 
 int find(char *key) {
@@ -253,35 +272,23 @@ int find(char *key) {
   return -1;
 }
 
-char *getRecordLineData(int index) {
-  FILE *file = fopen(RECORDS_PATH, "rt");
-  if (file == NULL) {
-    printf("Erro ao procurar registro!");
-    return;
-  }
-
-  char *line = malloc(sizeof(char) * 250);
-  for (int i = 0; fgets(line, 250, file) != NULL; i++) {
-    if (i != index) continue;
-    if (haveNoRecords()) return;
-
-    fclose(file);
-    free(file);
-    return line;
-  }
-
-  fclose(file);
-  free(file);
-  return line;
-}
-
 int findRecord() {
   char musicName[50];
   getStringInput(" >> Insira o nome da musica procurada: ", musicName);
 
   int recordIndex = find(musicName);
-  if (recordIndex == -1) printf("[Musica nao encontrada]");
+  if (recordIndex == -1) printf("\n[Musica nao encontrada]");
   return recordIndex;
+}
+
+void showRecordData(struct Music music) {
+  printf("\nNome da musica: %s", music.name);
+  printf("\nDuracao: %d mins", music.duration);
+  printf("\nEstilo da musica: %s", music.style);
+  printf("\nNome do autor: %s", music.artist.name);
+  printf("\nNacionalidade do autor: %s", music.artist.nationality);
+  struct Date date = music.registrationDate;
+  printf("\nData de registro: %02d/%02d/%02d", date.day, date.month, date.year);
 }
 
 void listAllRecords() {
@@ -307,23 +314,6 @@ void listAllRecords() {
   fclose(file);
 }
 
-int countRecords() {
-  FILE *file = fopen(RECORDS_PATH, "rt");
-  if (file == NULL) {
-    printf("Erro ao procurar registros!");
-    return;
-  }
-
-  char line[250];
-  int counter = 0;
-  while (fgets(line, 250, file) != NULL) {
-    counter++;
-  }
-
-  fclose(file);
-  return counter;
-}
-
 void recordLineDateRemove(int index) {
   FILE *file = fopen(RECORDS_PATH, "rt");
   FILE *temp = fopen(TEMP_PATH, "w");
@@ -347,56 +337,48 @@ void recordLineDateRemove(int index) {
   rename(TEMP_PATH, RECORDS_PATH);
 }
 
-boolean haveNoRecords() {
-  int recordCounter = countRecords();
-  if (recordCounter == 0) {
-    printf("Nenhum registro encontrado!");
-    return true;
-  }
+// Implementação das funções solicitadas
 
-  return false;
-}
+// Inserir
 
 void newRecord() {
   FILE *file = fopen(RECORDS_PATH, "at");
   if (file == NULL) {
-    message("Erro ao inserir registro!");
+    printf("Erro ao inserir registro!");
     return;
   }
 
   struct Music music;
-  boolean musicDuplicated;
+  boolean alreadyExists;
   int validDate;
 
   do {
-    clearScreen();
-    getStringInput("Informe o nome da musica: ", music.name);
-    musicDuplicated = find(music.name) != -1;
+    enterStringInput(" >> Nome da musica: ", music.name);
+    alreadyExists = find(music.name) != -1;
 
-    if (musicDuplicated) message("\nMusica ja existente, tente novamente...");
-  } while (musicDuplicated);
+    if (alreadyExists) message("[ERRO] - Musica ja existente");
+  } while (alreadyExists);
 
-  getIntegerInput("Informe seu tempo de duracao em minutos: ", &music.duration);
+  getIntegerInput(" >> Duracao [mins]: ", &music.duration);
+  enterStringInput(" >> Estilo: ", music.style);
+  enterStringInput(" >> Nome do artista: ", music.artist.name);
+  enterStringInput(" >> Nacionalidade do artista: ", music.artist.nationality);
 
-  getStringInput("Informe o estilo musical da musica: ", music.style);
+  time_t t = time(NULL);
+  struct tm tm = *localtime(&t);
 
-  getStringInput("Informe o nome do artista: ", music.artist.name);
-
-  getStringInput("Informe a nacionalidade do artista: ",
-                 music.artist.nationality);
-
-  do {
-    printf("\n\nDigite a data no formato dia/mes/ano: ");
-    scanf("%d/%d/%d", &music.registrationDate.day,
-          &music.registrationDate.month, &music.registrationDate.year);
-
-    if (!validDate) message("\nData invalida, tente novamente...");
-  } while (!validDate);
+  music.registrationDate.day = tm.tm_mday;
+  music.registrationDate.month = tm.tm_mon + 1;
+  music.registrationDate.year = tm.tm_year + 1900;
 
   insert(&music);
   fclose(file);
   free(file);
+
+  printf("\n[Nova musica inserida com sucesso!]");
 }
+
+// Remover
 
 void recordRemove() {
   if (haveNoRecords()) return;
@@ -404,13 +386,17 @@ void recordRemove() {
   int recordIndex = findRecord();
   if (recordIndex == -1) return;
   recordLineDateRemove(recordIndex);
-  printf(" >> Musica removida com sucesso!");
+  printf("\n[Musica removida com sucesso!]");
 }
+
+// Listar
 
 void listRecords() {
   if (haveNoRecords()) return;
   listAllRecords();
 }
+
+// Consultar
 
 void showRecord() {
   if (haveNoRecords()) return;
@@ -420,6 +406,6 @@ void showRecord() {
   showRecordData(lineDataToMusic(getRecordLineData(recordIndex)));
 }
 
-// Forma de selecionar a função baseado em posição
+// Lista com as funções do menu
 const void (*FUNCTIONS[])() = {invalidOption, newRecord, recordRemove,
                                listRecords, showRecord};
