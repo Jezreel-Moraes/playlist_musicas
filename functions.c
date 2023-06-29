@@ -64,8 +64,6 @@ void insert(struct Music *music) {
 
 void newRecord() {}
 
-void recordRemove() {}
-
 int stringToInteger(char *string) {
   int value = 0;
   for (int i = 0; string[i] != '\0'; i++) {
@@ -117,7 +115,7 @@ void listRecords() {
   FILE *file = fopen(RECORDS_PATH, "rt");
   if (file == NULL) {
     message("Erro ao procurar registro!");
-    return -1;
+    return;
   }
 
   printf("Listagem de Musicas Cadastradas\n\n");
@@ -175,6 +173,29 @@ int find(char *key) {
   return -1;
 }
 
+void recordRemove(int index) {
+  FILE *file = fopen(RECORDS_PATH, "rt");
+  FILE *temp = fopen(TEMP_PATH, "w");
+  if (file == NULL || temp == NULL) {
+    message("Erro ao procurar registro!");
+    return;
+  }
+
+  char line[250];
+  for (int i = 0; fgets(line, 250, file) != NULL; i++) {
+    if (i == index) continue;
+    fputs(line, temp);
+  }
+
+  fclose(file);
+  free(file);
+  fclose(temp);
+  free(temp);
+
+  remove(RECORDS_PATH);
+  rename(TEMP_PATH, RECORDS_PATH);
+}
+
 // Forma de selecionar a função baseado em posição
 const void (*FUNCTIONS[])() = {invalidOption, newRecord, recordRemove,
                                listRecords, showRecord};
@@ -214,6 +235,15 @@ int testeFind(int argc, char const *argv[]) {
   printf("%d", find("Rita Cassia"));
   printf("%d", find("Jezreel Moraes"));
   printf("%d", find("Gustavo Martins"));
+
+  return 0;
+}
+
+int testeListRemoveThenListAgain(int argc, char const *argv[]) {
+  listRecords();
+  printf("\n\n\n");
+  recordRemove(find("Gustavo Martins"));
+  listRecords();
 
   return 0;
 }

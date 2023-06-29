@@ -20,6 +20,7 @@ struct Playlist {
 };
 
 #define RECORDS_PATH "records.txt"
+#define TEMP_PATH "temp.tmp"
 
 void enterToContinue() {
   printf("\n\n>> Pressione enter para continuar...");
