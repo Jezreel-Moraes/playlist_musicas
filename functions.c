@@ -105,47 +105,6 @@ int isValidDate(int days, int month, int year) {
   return 1;
 }
 
-void newRecord() {
-  FILE *file = fopen(RECORDS_PATH, "at");
-  if (file == NULL) {
-    message("Erro ao inserir registro!");
-    return;
-  }
-
-  struct Music music;
-  bool musicDuplicated;
-  int validDate;
-
-  do {
-    clearScreen();
-    getStringInput("Informe o nome da musica: ", music.name);
-    musicDuplicated = find(music.name) != -1;
-
-    if (musicDuplicated) message("\nMusica ja existente, tente novamente...");
-  } while (musicDuplicated);
-
-  getIntegerInput("Informe seu tempo de duracao em minutos: ", &music.duration);
-
-  getStringInput("Informe o estilo musical da musica: ", music.style);
-
-  getStringInput("Informe o nome do artista: ", music.artist.name);
-
-  getStringInput("Informe a nacionalidade do artista: ",
-                 music.artist.nationality);
-
-  do {
-    printf("\n\nDigite a data no formato dia/mes/ano: ");
-    scanf("%d/%d/%d", &music.registrationDate.day,
-          &music.registrationDate.month, &music.registrationDate.year);
-
-    if (!validDate) message("\nData invalida, tente novamente...");
-  } while (!validDate);
-
-  insert(&music);
-  fclose(file);
-  free(file);
-}
-
 int stringToInteger(char *string) {
   int value = 0;
   for (int i = 0; string[i] != '\0'; i++) {
@@ -337,33 +296,42 @@ void recordLineDateRemove(int index) {
 void newRecord() {
   FILE *file = fopen(RECORDS_PATH, "at");
   if (file == NULL) {
-    printf("Erro ao inserir registro!");
+    message("Erro ao inserir registro!");
     return;
   }
 
   struct Music music;
+  bool musicDuplicated;
+  int validDate;
 
   do {
     clearScreen();
-    printf("Informe o nome da musica: ");
-    fgets(music.name, 49, stdin);
-    music.name[strcspn(music.name, "\n")] = '\0';
-  } while (find(music.name) != -1);
+    getStringInput("Informe o nome da musica: ", music.name);
+    musicDuplicated = find(music.name) != -1;
 
-  printf("\n\nInforme seu tempo de duracao em minutos: ");
-  scanf("%d", music.duration);
+    if (musicDuplicated) message("\nMusica ja existente, tente novamente...");
+  } while (musicDuplicated);
 
-  printf("\n\nInforme o estilo musical da musica: ");
-  fgets(music.style, 49, stdin);
-  music.style[strcspn(music.style, "\n")] = '\0';
+  getIntegerInput("Informe seu tempo de duracao em minutos: ", &music.duration);
 
-  printf("\n\nInforme o nome do artista: ");
-  fgets(music.artist.name, 49, stdin);
-  music.artist.name[strcspn(music.artist.name, "\n")] = '\0';
+  getStringInput("Informe o estilo musical da musica: ", music.style);
 
-  printf("\n\nInforme a nacionalidade do artista: ");
-  fgets(music.artist.name, 49, stdin);
-  music.artist.name[strcspn(music.artist.name, "\n")] = '\0';
+  getStringInput("Informe o nome do artista: ", music.artist.name);
+
+  getStringInput("Informe a nacionalidade do artista: ",
+                 music.artist.nationality);
+
+  do {
+    printf("\n\nDigite a data no formato dia/mes/ano: ");
+    scanf("%d/%d/%d", &music.registrationDate.day,
+          &music.registrationDate.month, &music.registrationDate.year);
+
+    if (!validDate) message("\nData invalida, tente novamente...");
+  } while (!validDate);
+
+  insert(&music);
+  fclose(file);
+  free(file);
 }
 
 void recordRemove() {
