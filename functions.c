@@ -255,7 +255,7 @@ void showRecord() {
   showRecordData(lineDataToMusic(getRecordLineData(recordIndex)));
 }
 
-void recordRemove(int index) {
+void recordLineDateRemove(int index) {
   FILE *file = fopen(RECORDS_PATH, "rt");
   FILE *temp = fopen(TEMP_PATH, "w");
   if (file == NULL || temp == NULL) {
@@ -276,6 +276,13 @@ void recordRemove(int index) {
 
   remove(RECORDS_PATH);
   rename(TEMP_PATH, RECORDS_PATH);
+}
+
+void recordRemove() {
+  int recordIndex = findRecord();
+  if (recordIndex == -1) return;
+  recordLineDateRemove(recordIndex);
+  printf(" >> Musica removida com sucesso!");
 }
 
 // Forma de selecionar a função baseado em posição
@@ -331,7 +338,12 @@ int testeinput(int argc, char const *argv[]) {
   return 0;
 }
 
-int main(int argc, char const *argv[]) {
+int testeShow(int argc, char const *argv[]) {
   showRecord();
+  return 0;
+}
+
+int main(int argc, char const *argv[]) {
+  recordRemove();
   return 0;
 }
